@@ -1,0 +1,11 @@
+.eric4project
+*.e4p
+build
+dist
+*.egg-info
+*.pyc
+*.swp
+*.nja
+.project
+.pydevproject
+.settings/
