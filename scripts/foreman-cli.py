@@ -6,6 +6,8 @@ import os.path
 
 import argparse
 
+import json
+
 try:
     from foreman import FHosts
 except ImportError, e:
@@ -27,11 +29,12 @@ def prepare_parser(parser=None):
     parser.add_argument('--foreman-password', default=None, action='store',
                         metavar='PASSWORD', dest='foreman_password',
                         help='Your Foreman Password', required=True)
-    # parser.add_argument('-O', '--ofile', metavar='FILENAME',
-    #                    dest='output_filename', action='store',
-    #                    help='Filename for output file')
-    # parser.add_argument('-F', '--format', dest='output_format',
-    #                    choices=['json', 'txt', 'pretty'])
+    parser.add_argument('-O', '--ofile', metavar='FILENAME',
+                        dest='output_filename', action='store',
+                        help='Filename for output file')
+    parser.add_argument('-F', '--format', dest='output_format',
+                        choices=['json', 'txt', 'pretty'],
+                        default='txt')
     subparser = parser.add_subparsers(help='Foreman Resource Commands', dest='resource_cmd')
     prepare_parser_hosts(subparser)
 
@@ -55,17 +58,36 @@ def do_process_hosts(args=None):
             hlist = h.list()
         else:
             hlist = h.search(args.host_search)
+        if args.output_format == 'txt':
+            if args.output_filename is None:
+                for i in hlist:
+                    print i
+            else:
+                fp = open(args.output_filename, 'wb')
+                for i in hlist:
+                    fp.write('{0}\n'.format(i))
+                fp.close()
+        if args.output_format == 'pretty':
+            print('       No.| Hostname\n'
+                  '----------+----------------------------------------')
+            counter = 0
+            for i in hlist:
+                counter += 1
+                print('{0:10d}| {1:40s}').format(counter, i)
+            print('----------+----------------------------------------')
+            print('Amount of Hosts: {0:d}').format(counter)
+            if args.host_search is not None:
+                print('Your search string was:\n\t\t{0}'.
+                      format(args.host_search))
 
-        print('       No.| Hostname\n'
-              '----------+----------------------------------------')
-        counter = 0
-        for i in hlist:
-            counter += 1
-            print('{0:10d}| {1:40s}').format(counter, i)
-        print('----------+----------------------------------------')
-        print('Amount of Hosts: {0:d}').format(counter)
-        if args.host_search is not None:
-            print('Your search string was:\n\t\t{0}').format(args.host_search)
+        if args.output_format == 'json':
+            if args.output_filename is None:
+                print(json.dumps(hlist))
+            else:
+                fp = open(args.output_filename, 'wb')
+                json.dump(hlist, fp)
+                fp.close()
+
 
 def do_process(args=None):
     if args is None:
