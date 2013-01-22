@@ -19,3 +19,4 @@
 
 from api import Foreman
 from api import FHosts
+from api import PTable

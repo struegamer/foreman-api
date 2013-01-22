@@ -18,6 +18,36 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ###############################################################################
 
-from foreman_main import Foreman
-from foreman_hosts import ForemanHosts
-from foreman_hosts import ForemanHostFacts
+import sys
+
+try:
+    from restkit import BasicAuth
+    from restkit.errors import ResourceNotFound
+
+except ImportError, e:
+    print('You didn\'t install python-restkit library')
+    print(e)
+    sys.exit(1)
+
+from resources import ForemanResource
+
+class Foreman(object):
+    def __init__(self, foreman_url=None, username=None, password=None):
+        auth = BasicAuth(username, password)
+        self._foreman = ForemanResource(foreman_url, filters=[auth])
+
+    def list(self):
+        pass
+
+    def search(self, search=''):
+        pass
+
+    def get(self):
+        pass
+
+    def add(self):
+        pass
+    def update(self):
+        pass
+    def delete(self):
+        pass

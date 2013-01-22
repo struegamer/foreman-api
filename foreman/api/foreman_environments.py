@@ -18,6 +18,33 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ###############################################################################
 
+import sys
+
+try:
+    from restkit import BasicAuth
+    from restkit.errors import ResourceNotFound
+
+except ImportError, e:
+    print('You didn\'t install python-restkit library')
+    print(e)
+    sys.exit(1)
+
+from resources import ForemanResource
 from foreman_main import Foreman
-from foreman_hosts import ForemanHosts
-from foreman_hosts import ForemanHostFacts
+
+class ForemanEnvironment(Foreman):
+    FOREMAN_RESOURCE = '/environments/'
+
+    def list(self):
+        return self._foreman.get(self.FOREMAN_RESOURCE)
+
+    def get(self, **kwargs):
+        try:
+            environment = None
+            if kwargs.get('id', None) is not None:
+                environment = self._foreman.get('{0}{1}'.format(self.FORMAN_RESOURCE, kwargs.get('id', None)))
+            if kwargs.get('environment', None) is not None:
+                environment = self._foreman.get('{0}{1}'.format(self.FORMAN_RESOURCE, kwargs.get('environment', None)))
+            return environment
+        except ResourceNotFound as e:
+            return None

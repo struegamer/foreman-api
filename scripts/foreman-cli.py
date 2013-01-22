@@ -10,6 +10,7 @@ import json
 
 try:
     from foreman import FHosts
+    from foreman import PTable
 except ImportError, e:
     print('you didn\'t install python-foreman')
     print(e)
@@ -46,13 +47,17 @@ def prepare_parser_hosts(subparser=None):
                         dest='host_list', help='List all Hosts in Foreman')
     parser.add_argument('-s', '--search', default=None, action='store',
                         dest='host_search', help='Find Hosts in foreman')
+    parser.add_argument('-g', '--get', default=None, action='store',
+                        dest='host_get', help='Get host Record')
+    parser.add_argument('--parameters', default=False, action='store_true',
+                        dest='host_parameters', help='Print Host Parameters')
 
 def do_process_hosts(args=None):
     if args is None:
         return False
+    h = FHosts(args.foreman_url, args.foreman_user,
+               args.foreman_password)
     if args.host_list:
-        h = FHosts(args.foreman_url, args.foreman_user,
-                   args.foreman_password)
         hlist = []
         if args.host_search is None:
             hlist = h.list()
@@ -61,11 +66,11 @@ def do_process_hosts(args=None):
         if args.output_format == 'txt':
             if args.output_filename is None:
                 for i in hlist:
-                    print i
+                    print i['host']['name']
             else:
                 fp = open(args.output_filename, 'wb')
                 for i in hlist:
-                    fp.write('{0}\n'.format(i))
+                    fp.write('{0}\n'.format(i['host']['name']))
                 fp.close()
         if args.output_format == 'pretty':
             print('       No.| Hostname\n'
@@ -73,7 +78,7 @@ def do_process_hosts(args=None):
             counter = 0
             for i in hlist:
                 counter += 1
-                print('{0:10d}| {1:40s}').format(counter, i)
+                print('{0:10d}| {1:40s}').format(counter, i['host']['name'])
             print('----------+----------------------------------------')
             print('Amount of Hosts: {0:d}').format(counter)
             if args.host_search is not None:
@@ -87,7 +92,15 @@ def do_process_hosts(args=None):
                 fp = open(args.output_filename, 'wb')
                 json.dump(hlist, fp)
                 fp.close()
-
+    if args.host_get is not None:
+        record = h.get(args.host_get)
+        for key, value in record['host'].iteritems():
+            print('{0} => {1}'.format(key, value))
+        # if args.host_parameters is True:
+        #    pt = PTable(args.foreman_url, args.foreman_user,
+        #                args.foreman_password)
+        #    parameters = pt.list(record['host']['ptable_id'])
+        #    print parameters
 
 def do_process(args=None):
     if args is None:
