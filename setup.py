@@ -10,7 +10,8 @@ setup(name='python-foreman-api',
       license='LGPLv2', url='https://github.com/sadig/foreman-api',
       packages=[
         'foreman',
-        'foreman.api'],
+        'foreman.api',
+        'foreman.factories'],
       install_requires=['restkit'],
       scripts=['scripts/foreman-cli.py']
       )
