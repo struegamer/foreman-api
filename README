@@ -1,0 +1,11 @@
+Configuration:
+
+create a yaml file with the following entries:
+
+foreman_url: <url to foreman>/api
+foreman_user: <foreman username>
+foreman_password: <foreman password>
+
+Save it and chmod to 600
+
+
