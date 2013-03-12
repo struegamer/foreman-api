@@ -7,6 +7,7 @@ import os.path
 import argparse
 
 import json
+import yaml
 
 try:
     from foreman import FHosts
@@ -20,16 +21,9 @@ except ImportError, e:
 def prepare_parser(parser=None):
     if parser is None:
         parser = argparse.ArgumentParser(prog='foreman-cli')
-    parser.add_argument('--foreman-url', default=None, action='store',
-                        metavar='http://your.foreman.tld/',
-                        dest='foreman_url', help='Foreman Web URL',
-                        required=True)
-    parser.add_argument('--foreman-user', default=None, action='store',
-                        metavar='USERNAME', dest='foreman_user',
-                        help='Your Foreman Username', required=True)
-    parser.add_argument('--foreman-password', default=None, action='store',
-                        metavar='PASSWORD', dest='foreman_password',
-                        help='Your Foreman Password', required=True)
+    parser.add_argument('-C','--config',metavar='CONFIGFILE',
+                        dest='config_filename',action='store',
+                        help='Filename for config')
     parser.add_argument('-O', '--ofile', metavar='FILENAME',
                         dest='output_filename', action='store',
                         help='Filename for output file')
@@ -52,11 +46,12 @@ def prepare_parser_hosts(subparser=None):
     parser.add_argument('--parameters', default=False, action='store_true',
                         dest='host_parameters', help='Print Host Parameters')
 
-def do_process_hosts(args=None):
+def do_process_hosts(config=None,args=None):
     if args is None:
         return False
-    h = FHosts(args.foreman_url, args.foreman_user,
-               args.foreman_password)
+    if config is None:
+        return False
+    h=FHosts(config['foreman_url'],config['foreman_user'],config['foreman_password'])
     if args.host_list:
         hlist = []
         if args.host_search is None:
@@ -102,15 +97,29 @@ def do_process_hosts(args=None):
         #    parameters = pt.list(record['host']['ptable_id'])
         #    print parameters
 
+def load_config(config_filename):
+    f=open(config_filename,'rb')
+    config=yaml.load(f)
+    f.close()
+    return config
+
+def read_config(config_filename):
+    config=load_config(config_filename)
+    if 'foreman_url' not in config:
+        return False
+    if 'foreman_user' not in config:
+        return False
+    if 'foreman_password' not in config:
+        return False
+    return config
+
 def do_process(args=None):
     if args is None:
         return False
-
-    if (args.foreman_url is not None and
-        args.foreman_user is not None and
-        args.foreman_password is not None):
+    if args.config_filename is not None:
+        config=read_config(args.config_filename)
         if args.resource_cmd == 'hosts':
-            result = do_process_hosts(args)
+            result = do_process_hosts(config,args)
             if result is not False:
                 return result
     else:
