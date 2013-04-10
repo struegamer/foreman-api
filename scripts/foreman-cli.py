@@ -10,8 +10,7 @@ import json
 import yaml
 
 try:
-    from foreman import FHosts
-    from foreman import PTable
+    from foreman import ForemanHosts
 except ImportError, e:
     print('you didn\'t install python-foreman')
     print(e)
@@ -51,7 +50,7 @@ def do_process_hosts(config=None,args=None):
         return False
     if config is None:
         return False
-    h=FHosts(config['foreman_url'],config['foreman_user'],config['foreman_password'])
+    h=ForemanHosts(config['foreman_url'],config['foreman_user'],config['foreman_password'])
     if args.host_list:
         hlist = []
         if args.host_search is None:
